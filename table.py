@@ -16,7 +16,7 @@ def makeRow(name,scheme,tex):
 	samples = scheme.samples()
 	commsize = '{:.2f}'.format(round(scheme.total_comm() / 8000000.0,2))
 	if tex:
-		row = ["\Inst"+name,comsize,encodingsize,commpqsize,samples,commsize]
+		row = ["\Inst"+name,comsize,encodingsize,commpqsize,commsize]
 	else:
 		row = [name,comsize,encodingsize,commpqsize,(reception,encodinglength),samples,commsize]
 	return row
@@ -38,7 +38,7 @@ datasize = int(args[0])*8000000
 tex = "-l" in opts
 
 if tex:
-	table = [["Name","|com|","|Encoding|","Comm. p. Q.","Reception","Samples","Comm Total"]]
+	table = [["Name","|com|","|Encoding|","Comm. p. Q.","Comm Total"]]
 else:
 	table = [["Name","|com| [KB]","|Encoding| [MB]","Comm. p. Q. [KB]","Reception","Samples","Comm Total [MB]"]]
 
@@ -62,7 +62,7 @@ scheme = makeHomHashBasedScheme(datasize)
 table.append(makeRow("HomHash",scheme,tex))
 
 scheme = makeFRIScheme(datasize)
-table.append(makeRow("FRI-Based",scheme,tex))
+table.append(makeRow("FRI",scheme,tex))
 
 
 if tex:

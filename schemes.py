@@ -109,9 +109,6 @@ def makeKZGScheme(datasize, invrate=4):
         com_size=BLS_GE_SIZE,
         opening_overhead=BLS_GE_SIZE,
     )
-    # scheme["samples"] = math.ceil(
-    #    SECPAR_SOUND + (1.0 - math.log(math.e, 1 / invrate)) * (k - 1)
-    #)
 
 
 # Tensor Code Commitment, where each dimension is expanded with inverse rate invrate.
@@ -129,11 +126,6 @@ def makeTensorScheme(datasize, invrate=2):
         com_size=BLS_GE_SIZE*k,
         opening_overhead=BLS_GE_SIZE,
     )
-
-    #scheme["samples"] = math.ceil(
-    #    SECPAR_SOUND + (1.0 - math.log(math.e, r)) * 
-    #)
-    return scheme
 
 
 # Hash-Based Code Commitment, over field with elements of size fsize,
@@ -166,16 +158,3 @@ def makeHomHashBasedScheme(datasize, P=2, L=2, invrate=4):
         com_size=n * PEDERSEN_GE_SIZE + P * n * PEDERSEN_FE_SIZE + L * k * PEDERSEN_FE_SIZE,
         opening_overhead=0,
     )
-
-    # scheme = {}
-    #scheme["encodingsymbolsize"] = k * PEDERSEN_FE_SIZE
-    # scheme["comsize"] = (
-    #    n * PEDERSEN_GE_SIZE + P * n * PEDERSEN_FE_SIZE + L * k * PEDERSEN_FE_SIZE
-    # )
-    # scheme["encodinglength"] = n
-    # scheme["commpqsize"] = math.ceil(math.log(n, 2)) + scheme["encodingsymbolsize"]
-    # scheme["reception"] = code["reception"]
-    # r = code["reception"] / code["codewordlength"]
-    # scheme["samples"] = math.ceil(SECPAR_SOUND + (1.0 - math.log(math.e, r)) * (k - 1))
-    #
-    # return scheme

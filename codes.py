@@ -83,7 +83,8 @@ class Code:
         # special case: if all symbols are needed: just regular coupon collector
         if self.reception == self.codeword_len:
             n = self.codeword_len
-            return (n / math.log(math.e, 2)) * (math.log(n, 2) + sec_par)
+            s = math.ceil((n / math.log(math.e, 2)) * (math.log(n, 2) + sec_par))
+            return int(s)
         
         # generalized coupon collector
         r = self.relative_reception()
