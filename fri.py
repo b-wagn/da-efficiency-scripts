@@ -12,12 +12,12 @@ FRI_SOUNDNESS = STATISTICAL_SECURITY + RO_QUERIES - GRINDING
 # many elements. Each leaf of the tree contains one such tuple.
 # size of one opening (i.e., Merkle path + element)
 # of a Merkle tree that represents n elements
-# and each element has size fsize. 
+# and each element has size fsize.
 def sizeMerkleOpening(numleafs, tuplesize, fsize):
     tupleItself =  tuplesize * fsize
     sibling = tuplesize * fsize
     treedepth = math.ceil(math.log2(numleafs))
-    copath = (treedepth - 1) * HASH_SIZE 
+    copath = (treedepth - 1) * HASH_SIZE
     return tupleItself + sibling + copath
 
 
@@ -36,7 +36,7 @@ def friAuthSize(domainsize, rate, fsize, batchsize, fanin, basedimension):
 
     # now assume that we have already opened the batching
     # i.e., it remains to open everything from oracle G_0
-    # to oracle G_r. In every oracle, the FRI verifier 
+    # to oracle G_r. In every oracle, the FRI verifier
     # queries on a set of fanin positions.
     # We put this entire set into the same Merkle leaf.
     # We do not put the final oracle in a Merkle tree.
@@ -61,7 +61,7 @@ def friNumRounds(mink, fanin, basedimension):
         dimension *= fanin
         rnd += 1
     return rnd
-    
+
 
 
 # rate, size of first evaluation domain LLL_0, field size
@@ -84,13 +84,13 @@ def friNumRepetitions(rate, domainsize, fsize, batchsize, fanin):
     L = - FRI_SOUNDNESS / logbase
     return math.ceil(L)
 
-def makeFRIScheme(datasize, invrate = 4, fsize = 128, verbose = True):
+def makeFRIScheme(datasize, invrate = 4, fsize = 128, verbose = False):
     # determine k. Should be "compatible" with the fan-in
     # we need k to be at least ceil(datasize / fsize)
     minfe = math.ceil(datasize / fsize)
     if verbose:
         print("Need at least dimension minfe = " + str(minfe) + " field elements to represent the data.")
-    
+
 
     # call algorithm to find good batchsize, fanin, and base dimension
     (batchsize, fanin, basedimension) = friGoodParameters(minfe, fsize, invrate)
@@ -99,7 +99,7 @@ def makeFRIScheme(datasize, invrate = 4, fsize = 128, verbose = True):
     if verbose:
         print("With batch size B = " + str(batchsize) + ", we need at least dimension mink = " + str(mink))
         print("Use fanin F = " + str(fanin) + " and base dimension = " + str(basedimension))
-    # now determine the number of rounds to get at least 
+    # now determine the number of rounds to get at least
     # dimension mink in the base layer
     r = friNumRounds(mink, fanin, basedimension)
     if verbose:
@@ -110,13 +110,13 @@ def makeFRIScheme(datasize, invrate = 4, fsize = 128, verbose = True):
     rate =  1.0 / invrate
     if verbose:
         print("Need dimension k = " + str(k) + " and evaluation domain size n = " + str(n) + ".")
-    # determine the number of repetitions we need 
+    # determine the number of repetitions we need
     # to get good soundness guarantees
     L = friNumRepetitions(rate, n, fsize, batchsize, fanin)
     if verbose:
         print("Need " + str(L) + " repetitions of the query phase.")
-   
-    # determine the size of one opening 
+
+    # determine the size of one opening
     authsize = friAuthSize(n, rate, fsize, batchsize, fanin, basedimension)
 
     # now compile the scheme
@@ -125,7 +125,7 @@ def makeFRIScheme(datasize, invrate = 4, fsize = 128, verbose = True):
     # we include all openings for the final layer in the commitment, and no Merkle root for it
     # if we do batching, we need one root more
     final = basedimension * fsize
-    openings = L * authsize 
+    openings = L * authsize
     roots =  r * HASH_SIZE + (batchsize > 1) * HASH_SIZE
 
     return Scheme(
@@ -143,8 +143,8 @@ def makeFRIScheme(datasize, invrate = 4, fsize = 128, verbose = True):
 
 # given the minimum number of field elements we need to represent (minfe),
 # the field size (fsize), the inverse rate (invrate), the basedimension, and
-# the fanin, this function computes a good batchsize. Good means that the 
-# batchsize minimizes (in a certain range) the size of a single opening 
+# the fanin, this function computes a good batchsize. Good means that the
+# batchsize minimizes (in a certain range) the size of a single opening
 def friGoodBatchsize(minfe, fsize, invrate, basedimension, fanin):
     batchsizerange = range(1,257)
     batchsize = 1
@@ -161,14 +161,14 @@ def friGoodBatchsize(minfe, fsize, invrate, basedimension, fanin):
     return batchsize
 
 # given the minimum number of field elements we need to represent (minfe),
-# the field size (fsize) and the inverse rate (invrate), this function 
-# computes (batchsize, fanin, basedimension) for FRI that works reasonably 
-# well. This is for sure not always the optimal setting, especially if a 
+# the field size (fsize) and the inverse rate (invrate), this function
+# computes (batchsize, fanin, basedimension) for FRI that works reasonably
+# well. This is for sure not always the optimal setting, especially if a
 # specific metric should be optimized, e.g., communication per query
 def friGoodParameters(minfe, fsize, invrate):
-    
+
     # overall idea is to minimize the gap between the dimension on the largest layer
-    # and the dimension we would actually need to represent minfe elements. That is, 
+    # and the dimension we would actually need to represent minfe elements. That is,
     # we minimimize gap = basedimension * fanin^rounds - minfe / batchsize, ensuring
     # that gap >= 0. To do so, we try a few reasonable fanins and base dimensions
     faninrange = [4, 8, 16]
@@ -182,25 +182,20 @@ def friGoodParameters(minfe, fsize, invrate):
     for fanin in faninrange:
         for basedimension in basedimensionrange:
             # if we want to compute the gap for the pair (fanin, basedimension),
-            # we need to know a suitable batchsize first. To find it, we want 
+            # we need to know a suitable batchsize first. To find it, we want
             # to minimize the size of an opening, i.e., minimize friAuthSize
             batchsize = friGoodBatchsize(minfe, fsize, invrate, basedimension, fanin)
             mink = math.ceil(minfe / batchsize)
-            
+
             # determine the number of rounds that we need now
             r = friNumRounds(mink, fanin, basedimension)
             # compute gap for this fanin, basedimension, and batchsize
             gap = basedimension * (fanin**r) - mink
             # update if it is better
             if mingap == -1 or (gap >= 0 and gap <= mingap):
-                mingap = gap 
+                mingap = gap
                 optfanin = fanin
                 optbasedimension = basedimension
                 optbatchsize = batchsize
 
     return (optbatchsize, optfanin, optbasedimension)
-
-
-
-
-

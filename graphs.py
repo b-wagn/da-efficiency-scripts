@@ -3,6 +3,7 @@
 import math
 import sys
 import csv
+import os
 
 from schemes import *
 from fri import *
@@ -34,12 +35,15 @@ def writeScheme(name,makeScheme):
 		commtotal[s] = scheme.total_comm() /8000000
 		encoding[s] = scheme.encoding_size() /8000000000
 
-	writeCSV("./data/"+name+"_com.csv",commitment)
-	writeCSV("./data/"+name+"_comm_pq.csv",commpq)
-	writeCSV("./data/"+name+"_comm_total.csv",commtotal)
-	writeCSV("./data/"+name+"_encoding.csv",encoding)
-	
-	
+	if not os.path.exists("./csvdata/"):
+		os.makedirs("./csvdata")
+
+	writeCSV("./csvdata/"+name+"_com.csv",commitment)
+	writeCSV("./csvdata/"+name+"_comm_pq.csv",commpq)
+	writeCSV("./csvdata/"+name+"_comm_total.csv",commtotal)
+	writeCSV("./csvdata/"+name+"_encoding.csv",encoding)
+
+
 ############################################
 writeScheme("rs",makeKZGScheme)
 writeScheme("tensor",makeTensorScheme)
