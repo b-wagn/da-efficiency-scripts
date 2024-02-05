@@ -9,7 +9,7 @@ from schemes import *
 from fri import *
 
 DATASIZEUNIT = 8000*1000 # Megabytes
-DATASIZERANGE = range(1,60,6)
+DATASIZERANGE = range(1,156,15)
 
 def writeCSV(path,d):
 	with open(path, mode="w") as outfile:
@@ -30,10 +30,10 @@ def writeScheme(name,makeScheme):
 	for s in DATASIZERANGE:
 		datasize = s*DATASIZEUNIT
 		scheme = makeScheme(datasize)
-		commitment[s] = scheme.com_size / 8000000
-		commpq[s] = scheme.comm_per_query() /8000
-		commtotal[s] = scheme.total_comm() /8000000
-		encoding[s] = scheme.encoding_size() /8000000000
+		commitment[s] = scheme.com_size / 8000000 # MB
+		commpq[s] = scheme.comm_per_query() /8000 # KB
+		commtotal[s] = scheme.total_comm() /8000000000 # GB
+		encoding[s] = scheme.encoding_size() /8000000000 # GB
 
 	if not os.path.exists("./csvdata/"):
 		os.makedirs("./csvdata")

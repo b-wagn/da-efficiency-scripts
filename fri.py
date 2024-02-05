@@ -129,13 +129,10 @@ def makeFRIScheme(datasize, invrate = 4, fsize = 128, verbose = False):
     roots =  r * HASH_SIZE + (batchsize > 1) * HASH_SIZE
 
     return Scheme(
-        com_size=roots + final + openings,
-        code=rs.interleave(batchsize),
-        opening_overhead=authsize-batchsize*fsize,
+        com_size = roots + final + openings,
+        code = rs.interleave(batchsize),
+        opening_overhead = authsize-batchsize*fsize,
     )
-
-    # r = code["reception"] / code["codewordlength"]
-    # scheme["samples"] = math.ceil(SECPAR_SOUND + (1.0 - math.log(math.e, r)) * (k - 1))
 
 #--------------------------------------------------------------------------#
 #                           OPTIMIZATION SECTION                           #

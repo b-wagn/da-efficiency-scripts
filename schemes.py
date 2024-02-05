@@ -14,8 +14,6 @@ PEDERSEN_GE_SIZE = 33.0 * 8.0
 # Let's say we use SHA256
 HASH_SIZE = 256
 
-# Statistical Security Parameter for Soundness
-SECPAR_SOUND = 40
 
 from dataclasses import dataclass
 
@@ -27,12 +25,12 @@ class Scheme:
     com_size: int         # size of commitment in bits
     opening_overhead: int # overhead of opening a symbol in the encoding
 
-    def samples(self, sec_par=SECPAR_SOUND):
+    def samples(self):
         '''
-        i.e. the number of random samples needed to collect self.code.reception symbols
-        except with probability 2^{-SECPAR_SOUND}.
+        i.e. the number of random samples needed to collect 
+        enough symbols except with small probability
         '''
-        return self.code.num_samples_to_reconstruction(sec_par)
+        return self.code.samples
 
     def total_comm(self):
         '''
@@ -68,15 +66,16 @@ class Scheme:
 # Put all the data in one symbol, and let the commitment be a hash
 def makeNaiveScheme(datasize):
     return Scheme(
-        code=Code(
-            size_msg_symbol=datasize,
-            msg_len=1,
-            size_code_symbol=datasize,
-            codeword_len=1,
-            reception=1
+        code = Code(
+            size_msg_symbol = datasize,
+            msg_len = 1,
+            size_code_symbol = datasize,
+            codeword_len = 1,
+            reception = 1,
+            samples = 1
         ),
-        com_size=HASH_SIZE,
-        opening_overhead=0
+        com_size = HASH_SIZE,
+        opening_overhead = 0
     )
 
 # Merkle scheme
@@ -84,15 +83,9 @@ def makeNaiveScheme(datasize):
 def makeMerkleScheme(datasize, chunksize=1024):
     k = math.ceil(datasize / chunksize)
     return Scheme(
-        code=Code(
-            msg_len=k,
-            codeword_len=k,
-            reception=k,
-            size_msg_symbol=chunksize,
-            size_code_symbol=chunksize,
-        ),
-        com_size=HASH_SIZE,
-        opening_overhead=math.ceil(math.log(k, 2))*HASH_SIZE
+        code = makeTrivialCode(chunksize, k),
+        com_size = HASH_SIZE,
+        opening_overhead = math.ceil(math.log(k, 2))*HASH_SIZE
     )
 
 
@@ -101,13 +94,13 @@ def makeMerkleScheme(datasize, chunksize=1024):
 def makeKZGScheme(datasize, invrate=4):
     k = math.ceil(datasize / BLS_FE_SIZE)
     return Scheme(
-        code=makeRSCode(
+        code = makeRSCode(
             BLS_FE_SIZE, 
             k, 
             k * invrate
         ),
-        com_size=BLS_GE_SIZE,
-        opening_overhead=BLS_GE_SIZE,
+        com_size = BLS_GE_SIZE,
+        opening_overhead = BLS_GE_SIZE,
     )
 
 
@@ -122,9 +115,9 @@ def makeTensorScheme(datasize, invrate=2):
     rs = makeRSCode(BLS_FE_SIZE, k, n)
 
     return Scheme(
-        code=rs.tensor(rs),
-        com_size=BLS_GE_SIZE*k,
-        opening_overhead=BLS_GE_SIZE,
+        code = rs.tensor(rs),
+        com_size = BLS_GE_SIZE * k,
+        opening_overhead = BLS_GE_SIZE,
     )
 
 
@@ -138,9 +131,9 @@ def makeHashBasedScheme(datasize, fsize=32, P=8, L=64, invrate=4):
     rs = makeRSCode(fsize, k, n)
 
     return Scheme(
-        code=rs.interleave(k),
-        com_size=n * HASH_SIZE + P * n * fsize + L * k * fsize,
-        opening_overhead=0,
+        code = rs.interleave(k),
+        com_size = n * HASH_SIZE + P * n * fsize + L * k * fsize,
+        opening_overhead = 0,
     )
 
 # Homomorphic Hash-Based Code Commitment
@@ -154,7 +147,7 @@ def makeHomHashBasedScheme(datasize, P=2, L=2, invrate=4):
     rs = makeRSCode(PEDERSEN_FE_SIZE, k, n)
 
     return Scheme(
-        code=rs.interleave(k),
-        com_size=n * PEDERSEN_GE_SIZE + P * n * PEDERSEN_FE_SIZE + L * k * PEDERSEN_FE_SIZE,
-        opening_overhead=0,
+        code = rs.interleave(k),
+        com_size = n * PEDERSEN_GE_SIZE + P * n * PEDERSEN_FE_SIZE + L * k * PEDERSEN_FE_SIZE,
+        opening_overhead = 0,
     )

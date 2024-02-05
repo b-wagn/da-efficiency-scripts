@@ -12,3 +12,6 @@ TODO: add description here
 
 ## Adding new Schemes
 TODO: add description here
+
+## License
+MIT License.
