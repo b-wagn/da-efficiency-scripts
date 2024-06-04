@@ -5,23 +5,25 @@ import math
 # Statistical Security Parameter for Soundness
 SECPAR_SOUND = 40
 
+
 @dataclass
 class Code:
     size_msg_symbol: int  # size of one symbol in the message
-    size_code_symbol: int # size of one symbol in the code
+    size_code_symbol: int  # size of one symbol in the code
     msg_len: int          # number of symbols in the message
     codeword_len: int     # number of symbols in the codeword
-    reception: int        # number of symbols needed to reconstruct (worst case)
+    # number of symbols needed to reconstruct (worst case)
+    reception: int
     samples: int          # number of random samples to reconstruct with high probability
 
     def interleave(self, ell):
         return Code(
-            size_msg_symbol = self.size_msg_symbol * ell,
-            size_code_symbol = self.size_code_symbol * ell,
-            msg_len = self.msg_len,
-            codeword_len = self.codeword_len,
-            reception = self.reception,
-            samples = self.samples
+            size_msg_symbol=self.size_msg_symbol * ell,
+            size_code_symbol=self.size_code_symbol * ell,
+            msg_len=self.msg_len,
+            codeword_len=self.codeword_len,
+            reception=self.reception,
+            samples=self.samples
         )
 
     def tensor(self, col):
@@ -84,29 +86,36 @@ class Code:
 
         Concretely, Option 2/3 will be tighter, especially for large k
         '''
-        samples_via_reception = samples_from_reception(SECPAR_SOUND, reception, codeword_len)
+        samples_via_reception = samples_from_reception(
+            SECPAR_SOUND, reception, codeword_len)
 
         loge = math.log2(math.e)
         lognc = math.log2(col.codeword_len)
         lognr = math.log2(self.codeword_len)
-        logbinomr = (self.reception - 1) * (lognr + loge - math.log2(self.reception - 1))
-        loginnerr = math.log2(1.0 - (self.codeword_len - self.reception + 1)/codeword_len)
-        logbinomc = (col.reception - 1) * (lognc + loge - math.log2(col.reception - 1))
-        loginnerc = math.log2(1.0 - (col.codeword_len - col.reception + 1)/codeword_len)
+        logbinomr = (self.reception - 1) * \
+            (lognr + loge - math.log2(self.reception - 1))
+        loginnerr = math.log2(
+            1.0 - (self.codeword_len - self.reception + 1)/codeword_len)
+        logbinomc = (col.reception - 1) * \
+            (lognc + loge - math.log2(col.reception - 1))
+        loginnerc = math.log2(
+            1.0 - (col.codeword_len - col.reception + 1)/codeword_len)
 
-        samples_direct_via_rows = int(math.ceil(-(lognc + logbinomr + SECPAR_SOUND)/loginnerr))
-        samples_direct_via_cols = int(math.ceil(-(lognr + logbinomc + SECPAR_SOUND)/loginnerc))
+        samples_direct_via_rows = int(
+            math.ceil(-(lognc + logbinomr + SECPAR_SOUND)/loginnerr))
+        samples_direct_via_cols = int(
+            math.ceil(-(lognr + logbinomc + SECPAR_SOUND)/loginnerc))
 
         samples_direct = min(samples_direct_via_rows, samples_direct_via_cols)
         samples = min(samples_direct, samples_via_reception)
 
         return Code(
-            size_msg_symbol = self.size_msg_symbol,
-            msg_len = self.msg_len * col.msg_len,
-            size_code_symbol = self.size_code_symbol,
-            codeword_len = codeword_len,
-            reception = reception,
-            samples = samples
+            size_msg_symbol=self.size_msg_symbol,
+            msg_len=self.msg_len * col.msg_len,
+            size_code_symbol=self.size_code_symbol,
+            codeword_len=codeword_len,
+            reception=reception,
+            samples=samples
         )
 
     def __eq__(self, other):
@@ -141,38 +150,46 @@ def samples_from_reception(sec_par, reception, codeword_len):
         n = codeword_len
         s = math.ceil((n / math.log(math.e, 2)) * (math.log(n, 2) + sec_par))
         return int(s)
-        
+
     # generalized coupon collector
     delta = reception - 1
     c = delta/codeword_len
-    s = math.ceil(-sec_par / math.log2(c) + (1.0-math.log(math.e,c))*delta) 
+    s = math.ceil(-sec_par / math.log2(c) + (1.0-math.log(math.e, c))*delta)
     return int(s)
 
-# Identity code
-def makeTrivialCode(chunksize, k):
+
+def makeTrivialCode(symbolsize, msg_len):
+    '''
+    Identity Code, mapping a message of msg_len many symbos to itself.
+    Each symbol is of size symbolsize bits
+    '''
     return Code(
-        size_msg_symbol = chunksize,
-        msg_len = k,
-        size_code_symbol = chunksize,
-        codeword_len = k,
-        reception = k,
-        samples = samples_from_reception(SECPAR_SOUND, k, k)
+        size_msg_symbol=symbolsize,
+        msg_len=msg_len,
+        size_code_symbol=symbolsize,
+        codeword_len=msg_len,
+        reception=msg_len,
+        samples=samples_from_reception(SECPAR_SOUND, msg_len, msg_len)
     )
 
-# Reed-Solomon Code
-# Polynomial of degree k-1 over field with field element length fsize
-# Evaluated at n points
+
 def makeRSCode(fsize, k, n):
+    '''
+    Reed-Solomon Code of dimension k
+    Polynomial of degree k-1 over field with field element length fsize
+    Evaluated at n points
+    '''
     assert k <= n
     assert 2**fsize >= n, 'no such reed-solomon code :('
     return Code(
-        size_msg_symbol = fsize,
-        msg_len = k,
-        size_code_symbol = fsize,
-        codeword_len = n,
-        reception = k,
-        samples = samples_from_reception(SECPAR_SOUND, k, n)
+        size_msg_symbol=fsize,
+        msg_len=k,
+        size_code_symbol=fsize,
+        codeword_len=n,
+        reception=k,
+        samples=samples_from_reception(SECPAR_SOUND, k, n)
     )
+
 
 # tests
 assert makeRSCode(5, 2, 4).tensor(makeRSCode(5, 2, 4)).reception == 8
