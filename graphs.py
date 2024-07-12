@@ -8,6 +8,8 @@ import os
 from schemes import *
 from fri import *
 
+# the graphs will be for data sizes 
+# i*DATASIZEUNIT for every i in DATASIZERANGE
 DATASIZEUNIT = 8000*1000  # Megabytes
 DATASIZERANGE = range(1, 156, 15)
 
@@ -22,6 +24,8 @@ def writeCSV(path, d):
 def writeScheme(name, makeScheme):
     '''
     Writes the graphs for a given scheme into a csv file
+    The scheme should be specified by a function makeScheme
+    that takes as input the datasize.
     '''
 
     commitment = {}

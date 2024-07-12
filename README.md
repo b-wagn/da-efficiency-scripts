@@ -24,7 +24,7 @@ For each scheme, `./csvdata/` will contain separate csv files for the commitment
 You can then plot this data, e.g., using LaTeX. 
 Here is an example of how to plot the encoding size:
 ```tex
-	\begin{tikzpicture}
+    \begin{tikzpicture}
       \begin{axis}[
           at={(ax1.south east)},
           xshift=2cm,
