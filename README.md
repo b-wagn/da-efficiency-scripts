@@ -1,6 +1,8 @@
 # Data Availability Sampling Efficiency Scripts
 This repository contains Python scripts to compute efficiency metrics of data availability sampling schemes. The code given here has been used in [this](https://eprint.iacr.org/2023/1079.pdf) and [this](https://eprint.iacr.org/2024/248.pdf) paper.
 
+Note: The parameters that this script selects internally have not been audited. The script has not been audited. Therefore, parameters picked by this script should not be used in production without further checking.
+
 ## Generating Tables
 First make sure that the `tabulate` module is installed.
 Then, you can generate tables by running
