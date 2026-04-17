@@ -7,8 +7,6 @@ RO_QUERIES = 60
 STATISTICAL_SECURITY = 40
 FRI_SOUNDNESS = STATISTICAL_SECURITY + RO_QUERIES - GRINDING
 
-REVIEWER = False
-REVIEWERPROXDELTA = 0.25
 
 
 def sizeMerkleOpening(numleafs, tuplesize, fsize):
@@ -62,7 +60,7 @@ def friAuthSize(domainsize, rate, fsize, batchsize, fanin, basedimension):
 def friNumRounds(mink, fanin, basedimension):
     '''
     Function to compute the number of rounds, given the number of field
-    elements needed to represent the data, the fanin of the folding, 
+    elements needed to represent the data, the fanin of the folding,
     and the dimension at which we stop folding
     '''
 
@@ -94,8 +92,6 @@ def friNumRepetitions(rate, domainsize, fsize, batchsize, fanin):
     # (1-delta^*/F)^L, and we need to get it below 2^{-FRI_SOUNDNESS}
     deltastar = 0.5 * (1.0 - rate)
 
-    if REVIEWER:
-        deltastar = REVIEWERPROXDELTA
 
     base = 1.0 - deltastar
     logbase = math.log2(base)
@@ -144,10 +140,6 @@ def makeFRIScheme(datasize, invrate=4, fsize=128, verbose=False):
 
     # now compile the scheme
     rs = makeRSCode(fsize, k, n)
-    if REVIEWER:
-        deltastar = 0.5 * (1.0 - rate)
-        rs.reception = n-math.ceil((deltastar - REVIEWERPROXDELTA)*n)
-        rs.samples = samples_from_reception(40, rs.reception, rs.codeword_len)
 
     # we include all openings for the final layer in the commitment, and no Merkle root for it
     # if we do batching, we need one root more
@@ -156,14 +148,6 @@ def makeFRIScheme(datasize, invrate=4, fsize=128, verbose=False):
     roots = r * HASH_SIZE + (batchsize > 1) * HASH_SIZE
 
     opening_overhead = authsize-batchsize*fsize
-
-    if REVIEWER and batchsize > 1:
-        opening_overhead = sizeMerkleOpening(n, batchsize, fsize)
-
-    if REVIEWER and batchsize == 1:
-        ncurr = n
-        numleafs = ncurr // fanin
-        opening_overhead = sizeMerkleOpening(numleafs, fanin, fsize)
 
     return Scheme(
         com_size=roots + final + openings,
